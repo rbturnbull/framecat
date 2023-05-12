@@ -169,3 +169,7 @@ cython_debug/
 
 *.csv
 cache
+
+gpu.sh
+*.slurm
+output
