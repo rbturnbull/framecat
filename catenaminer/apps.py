@@ -3,16 +3,24 @@ from pathlib import Path
 from torch import nn
 from fastai.data.core import DataLoaders
 import torchapp as ta
-from torchapp.examples.image_classifier import ImageClassifier
+from torchapp.examples.image_classifier import ImageClassifier, PathColReader
 from typing import List
 from pathlib import Path
 from fastai.data.block import DataBlock, CategoryBlock
-from fastai.data.transforms import ColReader, ColSplitter
+from fastai.data.transforms import ColReader, ColSplitter, DisplayedTransform
 from fastai.vision.data import ImageBlock
 from fastai.vision.augment import Resize, ResizeMethod
+from fastai.vision.core import PILImage
 
 from rich.console import Console
 console = Console()
+
+
+class GrayscaleTransform(DisplayedTransform):
+    def encodes(self,im:PILImage):
+        return im.convert('L')            
+
+
 
 class CatenaMiner(ImageClassifier):
     """
@@ -39,6 +47,7 @@ class CatenaMiner(ImageClassifier):
         width: int = ta.Param(default=224, help="The width to resize all the images to."),
         height: int = ta.Param(default=224, help="The height to resize all the images to."),
         resize_method: str = ta.Param(default="squish", help="The method to resize images."),
+        grayscale: bool = ta.Param(default=True, help="Whether to convert the images to grayscale."),
     ):
         df = pd.read_csv(csv)
         
@@ -49,13 +58,17 @@ class CatenaMiner(ImageClassifier):
             validation_column = validation_column_new
             
         splitter = ColSplitter(validation_column)
+        item_transforms = [Resize((height, width), method=resize_method)]
+        
+        if grayscale:
+            item_transforms.append(GrayscaleTransform())
 
         datablock = DataBlock(
             blocks=[ImageBlock, CategoryBlock],
             get_x=PathColReader(column_name=image_column, base_dir=base_dir),
             get_y=ColReader(category_column),
             splitter=splitter,
-            item_tfms=Resize((height, width), method=resize_method),
+            item_tfms=item_transforms,
         )
 
         return datablock.dataloaders(df, bs=batch_size)
