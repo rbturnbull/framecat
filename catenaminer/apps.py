@@ -12,6 +12,8 @@ from fastai.vision.data import ImageBlock
 from fastai.vision.augment import Resize, ResizeMethod
 from fastai.vision.core import PILImage
 
+from .plotting import plot_df
+
 from rich.console import Console
 console = Console()
 
@@ -73,3 +75,32 @@ class CatenaMiner(ImageClassifier):
 
         return datablock.dataloaders(df, bs=batch_size)
 
+    def output_results(
+        self, 
+        results, 
+        csv:Path = ta.Param(None, help="Path to write predictions in CSV format"), 
+        png:Path = ta.Param(None, help="Path to save output plot as PNG."), 
+        html:Path = ta.Param(None, help="Path to save output plot as HTML."), 
+        svg:Path = ta.Param(None, help="Path to save output plot as SVG."), 
+        show:bool = ta.Param(False, help="Whether or not to show the plot."),
+        thumbnails:bool = ta.Param(True, help="Whether or not to embed images of the thumbnails into the output."),
+        plot_width:int = ta.Param(1000, help="The width of the output plot."),
+        plot_height:int = ta.Param(600, help="The height of the output plot."),
+        verbose:bool = True, 
+        **kwargs
+    ):
+        df = super().output_results(results, csv, verbose, **kwargs)
+
+        if (png or html or svg or show):
+            return plot_df(
+                df,
+                png=png,
+                html=html,
+                svg=svg,
+                show=show,
+                thumbnails=thumbnails,
+                plot_width=plot_width,
+                plot_height=plot_height,
+            )
+
+        return df
