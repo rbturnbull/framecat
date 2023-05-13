@@ -31,11 +31,13 @@ def plot_df(
     thumbnail_size:int = 100,
 ):
     from bokeh.plotting import figure, output_file
+    from bokeh.resources  import settings
+
+    settings.resources = 'inline'
 
     if html:
         output_file(html)
     
-
     if not html and not show:
         thumbnails = False
 
@@ -52,14 +54,6 @@ def plot_df(
         <p>@frame</p>
     </div>
     """
-
-    # imcluster_io.df["path"] = [str(x) for x in imcluster_io.images]
-    # if not imcluster_io.has_column("thumbnail") or force or force_thumbnails:
-    #     print(f"Generating thumbnails within box ({thumbnail_width}x{thumbnail_height})")
-    #     imcluster_io.save_column(
-    #         "thumbnail",
-    #         imcluster_io.df.apply(lambda row: generate_thumbnail(row["path"], thumbnail_width, thumbnail_height), axis=1),
-    #     )
 
     df.path = df['path'].apply(lambda x:str(x))
 
@@ -79,10 +73,15 @@ def plot_df(
         from bokeh.plotting import show as show_plot
         show_plot(plot)
 
+    if html:
+        from bokeh.io import save
+        save(plot, str(html), title=title)
+
     if svg:
         from bokeh.io import export_svg
         plot.output_backend = "svg"
-        export_svg(plot, filename=svg)
+        export_svg(plot, filename=str(svg))
+
     
     return plot
 
