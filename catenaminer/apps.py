@@ -51,7 +51,7 @@ class CatenaMiner(ImageClassifier):
         width: int = ta.Param(default=224, help="The width to resize all the images to."),
         height: int = ta.Param(default=224, help="The height to resize all the images to."),
         resize_method: str = ta.Param(default="squish", help="The method to resize images."),
-        grayscale: bool = ta.Param(default=True, help="Whether to convert the images to grayscale."),
+        grayscale: bool = ta.Param(default=False, help="Whether to convert the images to grayscale."),
     ):
         df = pd.read_csv(csv)
         
@@ -94,7 +94,6 @@ class CatenaMiner(ImageClassifier):
         **kwargs
     ):
         df = super().output_results(results, output_csv, verbose, **kwargs)
-
         if (png or html or svg or show):
             return plot_df(
                 df,
