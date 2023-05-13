@@ -12,7 +12,7 @@ from fastai.vision.data import ImageBlock
 from fastai.vision.augment import Resize
 from fastai.vision.core import PILImage
 from fastai.metrics import accuracy, Precision, Recall, F1Score
-from fastai.vision.augment import Brightness, Contrast
+from fastai.vision.augment import aug_transforms
 
 from .plotting import plot_df
 from .loss import FocalLoss
@@ -70,8 +70,13 @@ class CatenaMiner(ImageClassifier):
         resize_method: str = ta.Param(default="squish", help="The method to resize images."),
         grayscale: bool = ta.Param(default=False, help="Whether to convert the images to grayscale."),
         dates_lambda:float = ta.Param(default=0.0, help="How much to use the date in the loss."),
-        brightness: float = 0.0,
-        contrast: float = 0.0,
+        max_lighting:float=0.0,
+        max_rotate:float=0.0,
+        max_warp:float=0.2,
+        max_zoom:float=1.0,
+        do_flip:bool=False,
+        p_affine:float=0.75,
+        p_lighting:float=0.75,
     ):
         df = pd.read_csv(csv)
         
@@ -87,13 +92,16 @@ class CatenaMiner(ImageClassifier):
         if grayscale:
             item_transforms.append(GrayscaleTransform())
 
-        batch_transforms = []
-
-        if contrast > 0.0:
-            batch_transforms.append(Contrast(max_lighting=brightness))
-
-        if brightness > 0.0:
-            batch_transforms.append(Brightness(max_lighting=brightness))
+        batch_transforms = aug_transforms(
+            p_lighting=p_lighting,
+            p_affine=p_affine,
+            max_rotate=max_rotate, 
+            do_flip=do_flip, 
+            max_lighting=max_lighting, 
+            max_zoom=max_zoom,
+            max_warp=max_warp,
+            pad_mode='zeros',
+        )
 
         blocks = [ImageBlock, CategoryBlock]
         getters = [
