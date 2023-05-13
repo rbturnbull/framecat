@@ -90,15 +90,15 @@ def plot_df(
 @app.command()
 def plot_csv(
     csv:Path,
-    title:str="",
-    png:Path = None,
-    html:Path = None,
-    svg:Path = None,
-    show:bool = False,
-    thumbnails:bool = True,
-    plot_width:int = 1000,
-    plot_height:int = 600,
-    thumbnail_size:int = 100,
+    png:Path = typer.Option(None, help="Path to save output plot as PNG."), 
+    html:Path = typer.Option(None, help="Path to save output plot as HTML."), 
+    svg:Path = typer.Option(None, help="Path to save output plot as SVG."), 
+    show:bool = typer.Option(False, help="Whether or not to show the plot."),
+    thumbnails:bool = typer.Option(True, help="Whether or not to embed images of the thumbnails into the output."),
+    plot_width:int = typer.Option(1000, help="The width of the output plot."),
+    plot_height:int = typer.Option(600, help="The height of the output plot."),
+    title:str = typer.Option("", help="The title of the plot. By default it takes the longest common prefix of the images."),
+    thumbnail_size:int = typer.Option(200, help="The max width and height of the embedded thumbnails."),
 ):
     df = pd.read_csv(csv)
     return plot_df(

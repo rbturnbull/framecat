@@ -79,6 +79,7 @@ class CatenaMiner(ImageClassifier):
         self, 
         results, 
         output_csv:Path = ta.Param(None, help="Path to write predictions in CSV format"), 
+        verbose:bool = True, 
         png:Path = ta.Param(None, help="Path to save output plot as PNG."), 
         html:Path = ta.Param(None, help="Path to save output plot as HTML."), 
         svg:Path = ta.Param(None, help="Path to save output plot as SVG."), 
@@ -86,7 +87,8 @@ class CatenaMiner(ImageClassifier):
         thumbnails:bool = ta.Param(True, help="Whether or not to embed images of the thumbnails into the output."),
         plot_width:int = ta.Param(1000, help="The width of the output plot."),
         plot_height:int = ta.Param(600, help="The height of the output plot."),
-        verbose:bool = True, 
+        title:str = ta.Param("", help="The title of the plot. By default it takes the longest common prefix of the images."),
+        thumbnail_size:int = ta.Param(200, help="The max width and height of the embedded thumbnails."),
         **kwargs
     ):
         df = super().output_results(results, output_csv, verbose, **kwargs)
@@ -94,6 +96,8 @@ class CatenaMiner(ImageClassifier):
         if (png or html or svg or show):
             return plot_df(
                 df,
+                title=title,
+                thumbnail_size=thumbnail_size,
                 png=png,
                 html=html,
                 svg=svg,
