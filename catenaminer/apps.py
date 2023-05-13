@@ -14,6 +14,7 @@ from fastai.vision.core import PILImage
 from fastai.metrics import accuracy, Precision, Recall, F1Score
 
 from .plotting import plot_df
+from .loss import FocalLoss
 
 from rich.console import Console
 console = Console()
@@ -112,3 +113,9 @@ class CatenaMiner(ImageClassifier):
 
     def metrics(self):
         return [accuracy, Precision(average="macro"), Recall(average="macro"), F1Score(average="macro")]
+
+    def loss_func(self,gamma:float=0.0):
+        if gamma == 0.0:
+            return nn.CrossEntropyLoss()
+        else:
+            return FocalLoss(gamma=gamma)
