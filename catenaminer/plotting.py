@@ -57,7 +57,8 @@ def plot_df(
     
     return plot
 
-@app.callback()
+
+@app.command()
 def plot_csv(
     csv:Path,
     png:Path = None,

@@ -51,3 +51,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 catenaminer = "catenaminer.apps:CatenaMiner.main"
+catenaminerplot = "catenaminer.plotting:app"

@@ -78,7 +78,7 @@ class CatenaMiner(ImageClassifier):
     def output_results(
         self, 
         results, 
-        csv:Path = ta.Param(None, help="Path to write predictions in CSV format"), 
+        output_csv:Path = ta.Param(None, help="Path to write predictions in CSV format"), 
         png:Path = ta.Param(None, help="Path to save output plot as PNG."), 
         html:Path = ta.Param(None, help="Path to save output plot as HTML."), 
         svg:Path = ta.Param(None, help="Path to save output plot as SVG."), 
@@ -89,7 +89,7 @@ class CatenaMiner(ImageClassifier):
         verbose:bool = True, 
         **kwargs
     ):
-        df = super().output_results(results, csv, verbose, **kwargs)
+        df = super().output_results(results, output_csv, verbose, **kwargs)
 
         if (png or html or svg or show):
             return plot_df(
