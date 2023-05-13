@@ -1,12 +1,26 @@
 from pathlib import Path
 import pandas as pd
 import typer
+import os
+import base64
+from io import BytesIO
+from PIL import Image
 
 app = typer.Typer()
 
 
+def generate_thumbnail(path, width, height):
+    im = Image.open(path)
+    size = width, height
+    im.thumbnail(size, Image.ANTIALIAS)
+    buffered = BytesIO()
+    im.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode("ascii")
+
+
 def plot_df(
     df,
+    title:str="",
     png:Path = None,
     html:Path = None,
     svg:Path = None,
@@ -14,17 +28,26 @@ def plot_df(
     thumbnails:bool = True,
     plot_width:int = 1000,
     plot_height:int = 600,
+    thumbnail_size:int = 100,
 ):
-    if not html and not show:
-        thumbnails = False
-
     from bokeh.plotting import figure, output_file
 
     if html:
         output_file(html)
     
-    TOOLTIPS = """
+
+    if not html and not show:
+        thumbnails = False
+
+    thumbnail_tooltip = ""
+    if thumbnails:
+        df["thumbnail"] = df.path.apply(lambda path: generate_thumbnail(path, thumbnail_size, thumbnail_size))
+        thumbnail_tooltip = '<img src="data:image/png;base64, @thumbnail{safe}" alt="Thumbnail" />'
+
+    TOOLTIPS = f"""
     <div>
+        {thumbnail_tooltip}
+        <p>@path</p>
         <p>@prediction</p>
         <p>@frame</p>
     </div>
@@ -39,7 +62,13 @@ def plot_df(
     #     )
 
     df.path = df['path'].apply(lambda x:str(x))
-    plot = figure(width=plot_width, height=plot_height, tooltips=TOOLTIPS)
+
+    if not title:
+        paths = df.path.tolist()
+        title = os.path.commonprefix(paths)
+
+    plot = figure(title=title, width=plot_width, height=plot_height, tooltips=TOOLTIPS)
+    plot.line("index", "frame", source=df)
     plot.circle("index", "frame", source=df, size=5)
     
     if png:
@@ -61,6 +90,7 @@ def plot_df(
 @app.command()
 def plot_csv(
     csv:Path,
+    title:str="",
     png:Path = None,
     html:Path = None,
     svg:Path = None,
@@ -68,10 +98,12 @@ def plot_csv(
     thumbnails:bool = True,
     plot_width:int = 1000,
     plot_height:int = 600,
+    thumbnail_size:int = 100,
 ):
     df = pd.read_csv(csv)
     return plot_df(
         df,
+        title=title,
         png=png,
         html=html,
         svg=svg,
@@ -79,4 +111,5 @@ def plot_csv(
         thumbnails=thumbnails,
         plot_width=plot_width,
         plot_height=plot_height,
+        thumbnail_size=thumbnail_size,
     )
