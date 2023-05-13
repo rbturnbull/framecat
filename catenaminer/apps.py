@@ -1,23 +1,40 @@
 import pandas as pd
 from pathlib import Path
+import torch
 from torch import nn
-from fastai.data.core import DataLoaders
 import torchapp as ta
 from torchapp.examples.image_classifier import ImageClassifier, PathColReader
 from typing import List
 from pathlib import Path
-from fastai.data.block import DataBlock, CategoryBlock
+from fastai.data.block import DataBlock, CategoryBlock, TransformBlock
 from fastai.data.transforms import ColReader, ColSplitter, DisplayedTransform
 from fastai.vision.data import ImageBlock
-from fastai.vision.augment import Resize, ResizeMethod
+from fastai.vision.augment import Resize
 from fastai.vision.core import PILImage
 from fastai.metrics import accuracy, Precision, Recall, F1Score
+from fastai.vision.augment import Brightness, Contrast
 
 from .plotting import plot_df
 from .loss import FocalLoss
 
 from rich.console import Console
 console = Console()
+
+
+DATE_MEAN = 1141.028124917435
+DATE_STD = 173.93942833016163
+
+
+def normalise_date(date):
+    return (float(date) - DATE_MEAN)/DATE_STD
+
+
+class GetDateRange():    
+    def __call__(self, item:Path):
+        min_date = normalise_date(item["min_date"])
+        max_date = normalise_date(item["max_date"])
+
+        return torch.as_tensor([min_date,max_date])
 
 
 class GrayscaleTransform(DisplayedTransform):
@@ -52,6 +69,9 @@ class CatenaMiner(ImageClassifier):
         height: int = ta.Param(default=224, help="The height to resize all the images to."),
         resize_method: str = ta.Param(default="squish", help="The method to resize images."),
         grayscale: bool = ta.Param(default=False, help="Whether to convert the images to grayscale."),
+        dates_lambda:float = ta.Param(default=0.0, help="How much to use the date in the loss."),
+        brightness: float = 0.0,
+        contrast: float = 0.0,
     ):
         df = pd.read_csv(csv)
         
@@ -63,16 +83,35 @@ class CatenaMiner(ImageClassifier):
             
         splitter = ColSplitter(validation_column)
         item_transforms = [Resize((height, width), method=resize_method)]
-        
+
         if grayscale:
             item_transforms.append(GrayscaleTransform())
 
+        batch_transforms = []
+
+        if contrast > 0.0:
+            batch_transforms.append(Contrast(max_lighting=brightness))
+
+        if brightness > 0.0:
+            batch_transforms.append(Brightness(max_lighting=brightness))
+
+        blocks = [ImageBlock, CategoryBlock]
+        getters = [
+            PathColReader(column_name=image_column, base_dir=base_dir),
+            ColReader(category_column),
+        ]
+
+        if dates_lambda > 0.0:
+            blocks.append(TransformBlock)
+            getters.append(GetDateRange())
+
         datablock = DataBlock(
-            blocks=[ImageBlock, CategoryBlock],
-            get_x=PathColReader(column_name=image_column, base_dir=base_dir),
-            get_y=ColReader(category_column),
+            blocks=blocks,
+            getters=getters,
             splitter=splitter,
             item_tfms=item_transforms,
+            batch_tfms=batch_transforms,
+            n_inp=1,
         )
 
         return datablock.dataloaders(df, bs=batch_size)
