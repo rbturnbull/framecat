@@ -11,6 +11,7 @@ from fastai.data.transforms import ColReader, ColSplitter, DisplayedTransform
 from fastai.vision.data import ImageBlock
 from fastai.vision.augment import Resize, ResizeMethod
 from fastai.vision.core import PILImage
+from fastai.metrics import accuracy, Precision, Recall, F1Score
 
 from .plotting import plot_df
 
@@ -108,3 +109,6 @@ class CatenaMiner(ImageClassifier):
             )
 
         return df
+
+    def metrics(self):
+        return [accuracy, Precision(average="macro"), Recall(average="macro"), F1Score(average="macro")]
