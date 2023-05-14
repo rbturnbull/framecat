@@ -1,5 +1,5 @@
 [run]
-source = catenaminer
+source = framecat
 
 [report]
 precision = 2

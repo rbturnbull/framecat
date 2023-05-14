@@ -2,6 +2,6 @@
 Command Line Interface Reference
 ================================
 
-.. click:: catenaminer.apps:CatenaMiner.click
-   :prog: catenaminer
+.. click:: framecat.apps:FrameCat.click
+   :prog: framecat
    :nested: full

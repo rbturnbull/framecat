@@ -1,6 +1,6 @@
 from torchapp.testing import TorchAppTestCase
-from catenaminer.apps import CatenaMiner
+from framecat.apps import FrameCat
 
 
-class TestCatenaMiner(TorchAppTestCase):
-    app_class = CatenaMiner
+class TestFrameCat(TorchAppTestCase):
+    app_class = FrameCat

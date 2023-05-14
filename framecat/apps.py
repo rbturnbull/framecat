@@ -42,7 +42,7 @@ class GrayscaleTransform(DisplayedTransform):
 
 
 
-class CatenaMiner(ImageClassifier):
+class FrameCat(ImageClassifier):
     """
     Identifies frame catena from manuscript images.
     """
