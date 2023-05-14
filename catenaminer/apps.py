@@ -16,14 +16,12 @@ from fastai.vision.augment import aug_transforms
 
 from .plotting import plot_df
 from .loss import FocalLoss, CatenaCombinedLoss
-from .metrics import accuracy, precision_score, recall_score, f1_score
+from .metrics import accuracy, precision_score, recall_score, f1_score, date_accuracy, DATE_MEAN, DATE_STD
 
 from rich.console import Console
 console = Console()
 
 
-DATE_MEAN = 1141.028124917435
-DATE_STD = 173.93942833016163
 
 
 def normalise_date(date):
@@ -165,7 +163,10 @@ class CatenaMiner(ImageClassifier):
         return df
     
     def metrics(self):
-        return [accuracy, precision_score, recall_score, f1_score]
+        metrics = [accuracy, precision_score, recall_score, f1_score]
+        if self.date_weight > 0.0:
+            metrics.append(date_accuracy)
+        return metrics
 
     def loss_func(self, gamma:float=0.0):
         if self.date_weight > 0.0:
