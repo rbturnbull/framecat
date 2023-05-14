@@ -11,18 +11,17 @@ from fastai.data.transforms import ColReader, ColSplitter, DisplayedTransform
 from fastai.vision.data import ImageBlock
 from fastai.vision.augment import Resize
 from fastai.vision.core import PILImage
-from fastai.metrics import accuracy, Precision, Recall, F1Score
+# from fastai.metrics import accuracy, Precision, Recall, F1Score
 from fastai.vision.augment import aug_transforms
 
 from .plotting import plot_df
-from .loss import FocalLoss
+from .loss import FocalLoss, CatenaCombinedLoss
+from .metrics import accuracy, precision_score, recall_score, f1_score, date_accuracy, DATE_MEAN, DATE_STD
 
 from rich.console import Console
 console = Console()
 
 
-DATE_MEAN = 1141.028124917435
-DATE_STD = 173.93942833016163
 
 
 def normalise_date(date):
@@ -69,7 +68,7 @@ class CatenaMiner(ImageClassifier):
         height: int = ta.Param(default=224, help="The height to resize all the images to."),
         resize_method: str = ta.Param(default="squish", help="The method to resize images."),
         grayscale: bool = ta.Param(default=False, help="Whether to convert the images to grayscale."),
-        dates_lambda:float = ta.Param(default=0.0, help="How much to use the date in the loss."),
+        date_weight:float = ta.Param(default=0.0, help="How much to use the date in the loss."),
         max_lighting:float=0.0,
         max_rotate:float=0.0,
         max_warp:float=0.0,
@@ -109,7 +108,8 @@ class CatenaMiner(ImageClassifier):
             ColReader(category_column),
         ]
 
-        if dates_lambda > 0.0:
+        self.date_weight = date_weight
+        if date_weight > 0.0:
             blocks.append(TransformBlock)
             getters.append(GetDateRange())
 
@@ -122,7 +122,12 @@ class CatenaMiner(ImageClassifier):
             n_inp=1,
         )
 
-        return datablock.dataloaders(df, bs=batch_size)
+        dls = datablock.dataloaders(df, bs=batch_size)
+
+        if date_weight > 0.0:
+            dls.c += 1
+
+        return dls
 
     def output_results(
         self, 
@@ -156,11 +161,17 @@ class CatenaMiner(ImageClassifier):
             )
 
         return df
-
+    
     def metrics(self):
-        return [accuracy, Precision(average="macro"), Recall(average="macro"), F1Score(average="macro")]
+        metrics = [accuracy, precision_score, recall_score, f1_score]
+        if self.date_weight > 0.0:
+            metrics.append(date_accuracy)
+        return metrics
 
-    def loss_func(self,gamma:float=0.0):
+    def loss_func(self, gamma:float=0.0):
+        if self.date_weight > 0.0:
+            return CatenaCombinedLoss(date_weight=self.date_weight, gamma=gamma)
+
         if gamma == 0.0:
             return nn.CrossEntropyLoss()
         else:
