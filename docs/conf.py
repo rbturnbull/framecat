@@ -18,14 +18,14 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "CatenaMiner"
+project = "FrameCat"
 copyright = "2022, Robert Turnbull"
 author = "Robert Turnbull"
 
 # The full version, including alpha/beta/rc tags
 release = "0.1.0"
 # import importlib.metadata
-# release = importlib.metadata.version('catenaminer')
+# release = importlib.metadata.version('framecat')
 
 
 # -- General configuration ---------------------------------------------------

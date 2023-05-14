@@ -2,7 +2,7 @@
 API Reference
 =======================
 
-.. automodule:: catenaminer.apps
+.. automodule:: framecat.apps
     :members:
     :inherited-members:
 

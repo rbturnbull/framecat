@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "CatenaMiner"
-version = "0.1.0"
+name = "FrameCat"
+version = "0.1.1"
 description = "Identifies frame catena from manuscript images."
 authors = ["Robert Turnbull <robert.turnbull@unimelb.edu.au>"]
 license = "Apache-2.0"
 readme = "README.rst"
-repository = "https://github.com/rbturnbull/catenaminer/"
-documentation = "https://rbturnbull.github.io/catenaminer"
-homepage = "https://github.com/rbturnbull/catenaminer/"
+repository = "https://github.com/rbturnbull/framecat/"
+documentation = "https://rbturnbull.github.io/framecat"
+homepage = "https://github.com/rbturnbull/framecat/"
 keywords = ["fastai", "torchapp", "pytorch", "deep learning", "command-line interface"]
 # For classifiers see https://pypi.org/classifiers/
 classifiers = [
@@ -51,5 +51,5 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-catenaminer = "catenaminer.apps:CatenaMiner.main"
-catenaminerplot = "catenaminer.plotting:app"
+framecat = "framecat.apps:FrameCat.main"
+framecatplot = "framecat.plotting:app"
