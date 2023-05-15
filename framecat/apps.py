@@ -71,7 +71,7 @@ class FrameCat(ImageClassifier):
         date_weight:float = ta.Param(default=0.0, help="How much to use the date in the loss."),
         max_lighting:float=0.0,
         max_rotate:float=0.0,
-        max_warp:float=0.2,
+        max_warp:float=0.0,
         max_zoom:float=1.0,
         do_flip:bool=False,
         p_affine:float=0.75,
