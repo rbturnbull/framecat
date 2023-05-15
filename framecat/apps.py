@@ -41,6 +41,15 @@ class GrayscaleTransform(DisplayedTransform):
         return im.convert('L')            
 
 
+class RandomGrayscaleTransform(DisplayedTransform):
+    def __init__(self, probability):
+        self.probability = probability
+
+    def encodes(self,im:PILImage):
+        if torch.rand(1) < self.probability:
+            return im.convert('L').convert('RGB')   
+        return im         
+
 
 class FrameCat(ImageClassifier):
     """
@@ -76,6 +85,7 @@ class FrameCat(ImageClassifier):
         do_flip:bool=False,
         p_affine:float=0.75,
         p_lighting:float=0.75,
+        p_grayscale:float=0.0,
     ):
         df = pd.read_csv(csv)
         
@@ -87,6 +97,9 @@ class FrameCat(ImageClassifier):
             
         splitter = ColSplitter(validation_column)
         item_transforms = [Resize((height, width), method=resize_method)]
+
+        if p_grayscale > 0.0:
+            item_transforms.append(RandomGrayscaleTransform(p_grayscale))
 
         if grayscale:
             item_transforms.append(GrayscaleTransform())
